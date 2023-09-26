@@ -1,0 +1,92 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opredflag"
+description = "A script which automatically updates OPRF standard asset files from the OpRedFlag repository"
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+authors = [
+  {name = "BobDotCom"},
+]
+#keywords = []
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+dynamic = ["version", "dependencies", "optional-dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/BobDotCom/py-opredflag"
+Repository = "https://github.com/BobDotCom/py-opredflag"
+Documentation = "https://opredflag.readthedocs.io"
+Changelog = "https://github.com/BobDotCom/py-opredflag/blob/main/CHANGELOG.md"
+Tracker = "https://github.com/BobDotCom/py-opredflag/issues"
+
+
+[project.scripts]
+oprf = "opredflag.cli:cli"
+opredflag = "opredflag.cli:cli"
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements.txt"}
+
+[tool.setuptools.dynamic.optional-dependencies]
+docs = {file = "requirements-docs.txt"}
+
+[tool.setuptools_scm]
+
+[tool.black]
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+#namespace_packages = true
+install_types = true
+strict = true
+show_error_codes = true
+exclude = [
+    "venv",
+]
+
+[tool.pylint.main]
+ignore = [
+    "docs/conf"
+]
+#extension-pkg-whitelist = [
+#    "pydantic",
+#    "ujson"
+#]
+py-version = 3.11
+
+[tool.pylint.messages_control]
+enable = [
+    "bad-indentation",
+    "line-too-long"
+]
+#disable = [
+#    "missing-module-docstring",
+#    "protected-access",
+#    "fixme"
+#]
+
+[tool.pylint.format]
+indent-string = '    '
+max-line-length = 120
+
+[tool.codespell]
+skip = "venv,.git"
+
+#[tool.pytest.ini_options]
+#asyncio_mode = "auto"
