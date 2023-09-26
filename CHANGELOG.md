@@ -7,6 +7,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.0.2.alpha] - 2023-09-26
+
 ### Fixed
 
 - Documentation dependency conflicts
@@ -17,5 +21,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - Initial version
 
-[unreleased]: https://github.com/BobDotCom/py-opredflag/compare/v0.0.1.alpha...HEAD
+[unreleased]: https://github.com/BobDotCom/py-opredflag/compare/v0.0.2.alpha...HEAD
+[0.0.2.alpha]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.0.2.alpha
 [0.0.1.alpha]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.0.1.alpha
