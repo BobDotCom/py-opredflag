@@ -58,7 +58,7 @@ def updater_parser(
     parser.add_argument(
         "-b",
         "--branch",
-        help='The branch of the repository to use. Default: "master"',
+        help='The branch of the OpRedFlag repository to use. Default: "master"',
         required=False,
         default="master",
     )
