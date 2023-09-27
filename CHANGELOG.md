@@ -7,6 +7,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.0.1] - 2023-09-27
+
 ### Changed
 
 - Changed updater CLI command to `oprf update`
@@ -24,5 +28,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Initial version
 
 [unreleased]: https://github.com/BobDotCom/py-opredflag/compare/v0.0.1.alpha.2...HEAD
+[0.0.1]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.0.1
 [0.0.1.alpha.2]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.0.1.alpha.2
 [0.0.1.alpha]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.0.1.alpha
