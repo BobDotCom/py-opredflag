@@ -14,7 +14,7 @@ CLI Usage
 
 .. code-block:: shell
 
-    oprf updater --help
+    oprf update --help
 
 
 Code Reference

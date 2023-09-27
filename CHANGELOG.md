@@ -7,13 +7,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-No changes yet.
+### Changed
+
+- Changed updater CLI command to `oprf update`
 
 ## [0.0.1.alpha.2] - 2023-09-26
 
 ### Fixed
 
-- Documentation dependency conflicts
+- Fixed documentation dependency conflicts
 
 ## [0.0.1.alpha] - 2023-09-26
 

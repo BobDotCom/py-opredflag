@@ -23,7 +23,7 @@ parser = argparse.ArgumentParser(prog="oprf", description="py-opredflag CLI")
 sub = parser.add_subparsers(required=True)
 
 parser_updater = sub.add_parser(
-    "updater",
+    "update",
     description="A script which automatically updates OPRF standard asset files from the OpRedFlag repository",
 )
 updater_parser(parser_updater)
