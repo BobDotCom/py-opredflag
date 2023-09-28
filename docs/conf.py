@@ -76,6 +76,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinxext.opengraph",
     "sphinx_autodoc_typehints",
+    "sphinxarg.ext",
 ]
 
 always_document_param_types = True

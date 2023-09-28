@@ -19,19 +19,23 @@ import argparse
 
 from .updater.cli import updater_parser
 
-parser = argparse.ArgumentParser(prog="oprf", description="py-opredflag CLI")
-sub = parser.add_subparsers(required=True)
 
-parser_updater = sub.add_parser(
-    "update",
-    description="A script which automatically updates OPRF standard asset files from the OpRedFlag repository",
-)
-updater_parser(parser_updater)
+def get_parser() -> argparse.ArgumentParser:
+    """Get a parser."""
+    parser = argparse.ArgumentParser(prog="oprf", description="py-opredflag CLI")
+    sub = parser.add_subparsers(required=True)
+
+    parser_updater = sub.add_parser(
+        "update",
+        description="A script which automatically updates OPRF standard asset files from the OpRedFlag repository",
+    )
+    updater_parser(parser_updater)
+    return parser
 
 
 def cli() -> None:
     """Run the CLI."""
-    args = parser.parse_args()
+    args = get_parser().parse_args()
     args.func(args)
 
 

@@ -12,10 +12,11 @@ GitHub action. Documentation can be found in marketplace listing or the reposito
 CLI Usage
 ---------
 
-.. code-block:: shell
-
-    oprf update --help
-
+.. argparse::
+    :module: opredflag.cli
+    :func: get_parser
+    :prog: oprf
+    :path: update
 
 Code Reference
 --------------
