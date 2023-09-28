@@ -1,3 +1,4 @@
+-r requirements.txt
 mypy==1.5.1
 types-requests==2.31.0.6
 pylint==2.17.6
