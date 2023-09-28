@@ -10,7 +10,7 @@ Installing py-opredflag
 Prerequisites
 -------------
 
-py-opredflag works with Python 3.11 or higher. Support for earlier versions of Python
+py-opredflag works with Python 3.10 or higher. Support for earlier versions of Python
 is not provided. Python 2.7 or lower is not supported. Python 3.10 or lower is not supported.
 
 

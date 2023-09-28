@@ -29,7 +29,7 @@ Key Features
 Installing
 ----------
 
-**Python 3.11 or higher is required**
+**Python 3.10 or higher is required**
 
 To install the library, run the following command:
 
