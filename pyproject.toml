@@ -40,10 +40,11 @@ oprf = "opredflag.cli:cli"
 opredflag = "opredflag.cli:cli"
 
 [tool.setuptools.dynamic]
-dependencies = {file = "requirements.txt"}
+dependencies = {file = "requirements/_.txt"}
 
 [tool.setuptools.dynamic.optional-dependencies]
-docs = {file = "requirements-docs.txt"}
+docs = {file = "requirements/docs.txt"}
+speedups = {file = "requirements/speedups.txt"}
 
 [tool.setuptools_scm]
 
@@ -77,11 +78,11 @@ enable = [
     "bad-indentation",
     "line-too-long"
 ]
-#disable = [
+disable = [
 #    "missing-module-docstring",
 #    "protected-access",
-#    "fixme"
-#]
+    "fixme"
+]
 
 [tool.pylint.format]
 indent-string = '    '

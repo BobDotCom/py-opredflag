@@ -16,8 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import argparse
+import asyncio
 
-from .core import update_assets
+from .core import Updater
 from .enums import Compatibility
 
 __all__ = ("updater_parser",)
@@ -103,15 +104,20 @@ def updater_parser(
     return parser
 
 
-def cli_func(args: argparse.Namespace) -> None:
+def cli_func(args: argparse.Namespace) -> str:
     """Execute the update_assets function from the CLI."""
-    update_assets(
-        args.directory,
-        args.version_json,
-        args.repository,
-        args.branch,
-        args.include,
-        args.exclude,
-        args.compatibility,
-        args.strict,
-    )
+
+    async def run() -> str:
+        updater = Updater(
+            args.directory,
+            args.version_json,
+            args.repository,
+            args.branch,
+            args.include,
+            args.exclude,
+            args.compatibility,
+            args.strict,
+        )
+        return "\n".join(await updater.run())
+
+    return asyncio.run(run())

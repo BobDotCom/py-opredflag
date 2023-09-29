@@ -21,7 +21,8 @@ CLI Usage
 Code Reference
 --------------
 
-.. autofunction:: update_assets
+.. autoclass:: Updater
+    :members:
 
 .. class:: Compatibility
 

@@ -35,8 +35,9 @@ def get_parser() -> argparse.ArgumentParser:
 
 def cli() -> None:
     """Run the CLI."""
-    args = get_parser().parse_args()
-    args.func(args)
+    parser = get_parser()
+    args = parser.parse_args()
+    parser.exit(0, args.func(args) + "\n")
 
 
 if __name__ == "__main__":

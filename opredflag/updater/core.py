@@ -15,15 +15,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import asyncio
 import json
 import os
-from typing import TypedDict
+from typing import Literal
 
-import requests
+import aiohttp
+from typing_extensions import NotRequired, TypedDict
 
 from .enums import Compatibility, VersionComparison
 
-__all__ = ("update_assets",)
+__all__ = ("Updater",)
 
 
 class FileVersion(TypedDict):
@@ -31,6 +33,39 @@ class FileVersion(TypedDict):
 
     version: str | None
     path: str
+
+
+class UpdaterData(TypedDict):
+    """Output data entry from the updater."""
+
+    key: str
+    path: str
+    old_version: str
+    new_version: NotRequired[str]
+    reason: NotRequired[str]
+    multi_key: bool
+
+
+def format_data(data: UpdaterData) -> str:
+    """Format :class:`UpdaterData` into a human-readable string.
+
+    Parameters
+    ----------
+    data:
+        Data to format
+
+    Returns
+    -------
+    str
+        The formatted data
+    """
+    versions = "{old_version}"
+    if "new_version" in data:
+        versions += "->{new_version}"
+    reason = f"{data['key']} {versions}"
+    reason += " ({reason})" if "reason" in data else ""
+    reason += " ({path})" if data["multi_key"] else ""
+    return reason.format_map(data)
 
 
 def compare_versions(first: str | None, second: str | None) -> VersionComparison:
@@ -76,17 +111,8 @@ def compare_versions(first: str | None, second: str | None) -> VersionComparison
     return ret
 
 
-def update_assets(
-    directory: str = ".",
-    version_json: str = "oprf-versions.json",
-    repository: str = "NikolaiVChr/OpRedFlag",
-    branch: str = "master",
-    include: str = "*",
-    exclude: str = "",
-    compatibility: Compatibility = Compatibility.MINOR,
-    strict: bool = False,
-) -> None:
-    """Update OPRF standard asset files from the OpRedFlag repository.
+class Updater:
+    """The base updater class which handles the whole process.
 
     Parameters
     ----------
@@ -107,89 +133,237 @@ def update_assets(
     strict:
         Fail if local file versions are newer than remote
     """
-    # pylint: disable=too-many-arguments,too-many-locals
-    version_json = os.path.join(directory, version_json)
 
-    with open(version_json, encoding="utf-8") as f_obj:
-        local_version_data: dict[str, FileVersion | list[FileVersion]] = json.load(
-            f_obj
+    # pylint: disable=too-many-instance-attributes
+
+    def __init__(
+        self,
+        directory: str = ".",
+        version_json: str = "oprf-versions.json",
+        repository: str = "NikolaiVChr/OpRedFlag",
+        branch: str = "master",
+        include: str = "*",
+        exclude: str = "",
+        compatibility: Compatibility = Compatibility.MINOR,
+        strict: bool = False,
+    ):
+        """Initialize the updater."""
+        # pylint: disable=too-many-arguments
+        self.directory = directory
+        self.version_json = os.path.join(directory, version_json)
+        self.repository = repository
+        self.branch = branch
+        self.include = include
+        self.exclude = exclude
+        self.compatibility = compatibility
+        self.strict = strict
+        self.session: aiohttp.ClientSession | None = None
+        self._remote_version_data: dict[str, FileVersion] | None = None
+        self.data: dict[
+            Literal["fetched", "skipped", "up-to-date"], list[UpdaterData]
+        ] = {
+            "fetched": [],
+            "skipped": [],
+            "up-to-date": [],
+        }
+
+        with open(self.version_json, encoding="utf-8") as f_obj:
+            self.local_version_data: dict[
+                str, FileVersion | list[FileVersion]
+            ] = json.load(f_obj)
+
+    @property
+    def remote_version_data(self) -> dict[str, FileVersion]:
+        """:meta private: Version data fetched from the remote repository, raises if unset."""
+        if self._remote_version_data is None:
+            raise RuntimeError("Version unset")
+        return self._remote_version_data
+
+    @remote_version_data.setter
+    def remote_version_data(self, value: dict[str, FileVersion]) -> None:
+        self._remote_version_data = value
+
+    def build_remote_url(self, path: str) -> str:
+        """:meta private: Build a URL to fetch a file from."""
+        return (
+            f"https://raw.githubusercontent.com/{self.repository}/{self.branch}/{path}"
         )
 
-    def build_remote_url(path: str) -> str:
-        return f"https://raw.githubusercontent.com/{repository}/{branch}/{path}"
+    def save_version_data(self) -> None:
+        """:meta private: Save the local versions file."""
+        with open(self.version_json, "w", encoding="utf-8") as f_obj:
+            json.dump(self.local_version_data, f_obj, indent=2)
 
-    def save_local_version_data() -> None:
-        with open(version_json, "w", encoding="utf-8") as f_obj:
-            json.dump(local_version_data, f_obj, indent=2)
+    async def fetch_remote_version_data(self) -> None:
+        """:meta private: Fetch remote version data."""
+        if self.session is None:
+            raise RuntimeError("Session unset")
+        async with self.session.get(
+            self.build_remote_url("versions.json"), timeout=30
+        ) as response:
+            self.remote_version_data = await response.json(content_type="text/plain")
 
-    with requests.get(build_remote_url("versions.json"), timeout=30) as response:
-        remote_version_data: dict[str, FileVersion] = response.json()
+    async def update_file(
+        self, key: str, data: FileVersion, multi_key: bool = False
+    ) -> None:
+        """:meta private: Update a file by key.
 
-    if include == "*":
-        keys_to_check = list(local_version_data.keys())
-    elif include == "":
-        keys_to_check = []
-    else:
-        keys_to_check = include.split(",")
+        Parameters
+        ----------
+        key:
+            The oprf-versions.json key for this file
+        data:
+            The local data we have saved for this file
+        multi_key:
+            If there are multiple files for this key, specifies path in script output
+        """
 
-    if exclude != "":
-        for k in exclude.split(","):
-            keys_to_check.remove(k)
-
-    def run_update(key: str, data: FileVersion, multi_key: bool = False) -> None:
-        post = f" ({data['path']})" if multi_key else ""
-
-        def fetch_data() -> None:
-            with requests.get(
-                build_remote_url(remote_version_data[key]["path"]), timeout=30
+        async def fetch_data() -> None:
+            if self.session is None:
+                raise RuntimeError("Session unset")
+            async with self.session.get(
+                self.build_remote_url(self.remote_version_data[key]["path"]), timeout=30
             ) as response:
                 response.raise_for_status()
                 with open(
-                    os.path.join(directory, data["path"]), "w", encoding="utf-8"
+                    os.path.join(self.directory, data["path"]), "w", encoding="utf-8"
                 ) as f_obj:
-                    f_obj.write(response.text)
-            print(
-                f"Fetched {key} {data['version']}->{remote_version_data[key]['version']}{post}"
+                    f_obj.write(await response.text())
+            self.data["fetched"].append(
+                UpdaterData(
+                    key=key,
+                    path=data["path"],
+                    old_version=data["version"] or "unknown_version",
+                    new_version=self.remote_version_data[key]["version"]
+                    or "unknown_version",
+                    multi_key=multi_key,
+                )
             )
-            data["version"] = remote_version_data[key]["version"]
+            data["version"] = self.remote_version_data[key]["version"]
 
-        match compare_versions(remote_version_data[key]["version"], data["version"]):
+        match compare_versions(
+            self.remote_version_data[key]["version"], data["version"]
+        ):
             case VersionComparison.NEWER_MAJOR:
                 # Remote is a major version bump ahead of us
-                if compatibility == Compatibility.MAJOR:
-                    fetch_data()
+                if self.compatibility == Compatibility.MAJOR:
+                    await fetch_data()
                 else:
-                    print(
-                        f"Remote {key} ({remote_version_data[key]['version']}) is a major version newer than ours "
-                        f"({data['version']}), skipping.{post}"
+                    self.data["skipped"].append(
+                        UpdaterData(
+                            key=key,
+                            path=data["path"],
+                            old_version=data["version"] or "unknown_version",
+                            new_version=self.remote_version_data[key]["version"]
+                            or "unknown_version",
+                            reason="Major version newer than local",
+                            multi_key=multi_key,
+                        )
                     )
             case VersionComparison.NEWER_MINOR:
                 # Remote is a minor version bump ahead of us
-                if compatibility in (Compatibility.MAJOR, Compatibility.MINOR):
-                    fetch_data()
+                if self.compatibility in (Compatibility.MAJOR, Compatibility.MINOR):
+                    await fetch_data()
                 else:
-                    print(
-                        f"Remote {key} ({remote_version_data[key]['version']}) is a minor version newer than ours "
-                        f"({data['version']}), skipping.{post}"
+                    self.data["skipped"].append(
+                        UpdaterData(
+                            key=key,
+                            path=data["path"],
+                            old_version=data["version"] or "unknown_version",
+                            new_version=self.remote_version_data[key]["version"]
+                            or "unknown_version",
+                            reason="Minor version newer than local",
+                            multi_key=multi_key,
+                        )
                     )
             case VersionComparison.NEWER_PATCH | VersionComparison.UNKNOWN:
                 # Remote is a minor/patch version bump ahead of us, or we don't have a saved version yet
-                fetch_data()
+                await fetch_data()
             case VersionComparison.OLDER_MAJOR | VersionComparison.OLDER_MINOR | VersionComparison.OLDER_PATCH:
-                newer_msg = (
-                    f"Local {key} ({data['version']}) is newer than remote "
-                    f"({remote_version_data[key]['version']})"
+                data_obj = UpdaterData(
+                    key=key,
+                    path=data["path"],
+                    old_version=data["version"] or "unknown_version",
+                    new_version=self.remote_version_data[key]["version"]
+                    or "unknown_version",
+                    reason="Newer than remote",
+                    multi_key=multi_key,
                 )
-                if strict:
-                    raise RuntimeError(newer_msg + post)
-                print(f"{newer_msg}, skipping.{post}")
+                if self.strict:
+                    raise RuntimeError(format_data(data_obj))
+                self.data["skipped"].append(data_obj)
             case VersionComparison.EQUAL:
-                print(f"{key} is up-to-date ({data['version']}){post}")
-        save_local_version_data()
+                self.data["up-to-date"].append(
+                    UpdaterData(
+                        key=key,
+                        path=data["path"],
+                        old_version=data["version"] or "unknown_version",
+                        multi_key=multi_key,
+                    )
+                )
 
-    for k, val in {k: local_version_data[k] for k in keys_to_check}.items():
-        if isinstance(val, list):
-            for data_part in val:
-                run_update(k, data_part, True)
+    def get_keys(self) -> list[str]:
+        """:meta private: Get keys."""
+        if self.include == "*":
+            keys_to_check = list(self.local_version_data.keys())
+        elif self.include == "":
+            keys_to_check = []
         else:
-            run_update(k, val)
+            keys_to_check = self.include.split(",")
+
+        if self.exclude != "":
+            for k in self.exclude.split(","):
+                keys_to_check.remove(k)
+
+        return keys_to_check
+
+    async def run(self) -> list[str]:
+        """Run the update.
+
+        Returns
+        -------
+        list[str]
+            The script output, split by newlines
+        """
+        self.session = aiohttp.ClientSession()
+        try:
+            await self.fetch_remote_version_data()
+
+            keys_to_check = self.get_keys()
+
+            # TODO: When upgraded to 3.11, use asyncio.TaskGroup for main runner
+            #       https://docs.python.org/3.11/library/asyncio-task.html#task-groups
+
+            # Old:
+            # coros = []
+            # coros.append()
+            # await asyncio.gather(coros)
+
+            # New:
+            # async with asyncio.TaskGroup() as tg:
+            #     tg.create_task()
+
+            coros = []
+
+            for k, val in {
+                k: self.local_version_data[k] for k in keys_to_check
+            }.items():
+                if isinstance(val, list):
+                    for data_part in val:
+                        coros.append(self.update_file(k, data_part, True))
+                else:
+                    coros.append(self.update_file(k, val))
+            await asyncio.gather(*coros)
+
+            output = []
+            for key, values in self.data.items():
+                if len(values) > 0:
+                    output.append(f"{key.title()}:")
+                for item in values:
+                    output.append(f"\t{format_data(item)}")
+            return output
+        except BaseException:  # pylint: disable=try-except-raise
+            # We don't actually want to catch exceptions, we're just using this for the "finally" block
+            raise
+        finally:
+            await self.session.close()
