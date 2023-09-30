@@ -37,7 +37,8 @@ def cli() -> None:
     """Run the CLI."""
     parser = get_parser()
     args = parser.parse_args()
-    parser.exit(0, args.func(args) + "\n")
+    print(args.func(args))
+    # parser.exit(0, args.func(args) + "\n")
 
 
 if __name__ == "__main__":
