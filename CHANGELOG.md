@@ -7,31 +7,45 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-No changes yet.
+### Added
+
+- Added request caching, resulting in major performance improvements when multi-keys are
+  used.
+
+### Changed
+
+- Replaced `update_assets(...)` with `await Updater(...).run()`.
+- `opredflag.updater` now uses asyncIO, resulting in major performance improvements.
+- Reformatted output. Updates are printed to stdout, while non-changes are returned by
+  the script.
+
+### Fixed
+
+- Files will not be updated if script fails.
 
 ## [0.0.2] - 2023-09-27
 
 ### Added
 
-- Added support for python 3.10
+- Added support for python 3.10.
 
 ## [0.0.1] - 2023-09-27
 
 ### Changed
 
-- Changed updater CLI command to `oprf update`
+- Changed updater CLI command to `oprf update`.
 
 ## [0.0.1.alpha.2] - 2023-09-26
 
 ### Fixed
 
-- Fixed documentation dependency conflicts
+- Fixed documentation dependency conflicts.
 
 ## [0.0.1.alpha] - 2023-09-26
 
 ### Added
 
-- Initial version
+- Initial version.
 
 [unreleased]: https://github.com/BobDotCom/py-opredflag/compare/v0.0.2...HEAD
 [0.0.2]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.0.2
