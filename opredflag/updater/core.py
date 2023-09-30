@@ -171,11 +171,18 @@ class Updater:
             "skipped": [],
             "up-to-date": [],
         }
+        self.pending_write_files: dict[str, str] = {}
 
         with open(self.version_json, encoding="utf-8") as f_obj:
             self.local_version_data: dict[
                 str, FileVersion | list[FileVersion]
             ] = json.load(f_obj)
+
+    def write_files(self) -> None:
+        """:meta private: Write all scheduled files."""
+        for filepath, value in self.pending_write_files.items():
+            with open(filepath, "w", encoding="utf-8") as f_obj:
+                f_obj.write(value)
 
     @property
     def remote_version_data(self) -> dict[str, FileVersion]:
@@ -230,10 +237,9 @@ class Updater:
                 self.build_remote_url(self.remote_version_data[key]["path"]), timeout=30
             ) as response:
                 response.raise_for_status()
-                with open(
-                    os.path.join(self.directory, data["path"]), "w", encoding="utf-8"
-                ) as f_obj:
-                    f_obj.write(await response.text())
+                self.pending_write_files[
+                    os.path.join(self.directory, data["path"])
+                ] = await response.text()
             self.data["fetched"].append(
                 UpdaterData(
                     key=key,
@@ -366,6 +372,9 @@ class Updater:
                     output.append(f"{key.title()}:")
                 for item in values:
                     output.append(f"\t{format_data(item)}")
+
+            self.write_files()
+            self.save_version_data()
             return output
         except BaseException:  # pylint: disable=try-except-raise
             # We don't actually want to catch exceptions, we're just using this for the "finally" block
