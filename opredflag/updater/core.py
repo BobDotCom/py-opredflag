@@ -22,6 +22,7 @@ import sys
 from typing import Literal
 
 import aiohttp
+from async_lru import alru_cache
 
 from .enums import Compatibility, VersionComparison
 
@@ -206,6 +207,7 @@ class Updater:
         with open(self.version_json, "w", encoding="utf-8") as f_obj:
             json.dump(self.local_version_data, f_obj, indent=2)
 
+    @alru_cache(ttl=30, typed=True)
     async def fetch_remote_version_data(self) -> None:
         """:meta private: Fetch remote version data."""
         if self.session is None:
@@ -214,6 +216,17 @@ class Updater:
             self.build_remote_url("versions.json"), timeout=30
         ) as response:
             self.remote_version_data = await response.json(content_type="text/plain")
+
+    @alru_cache(ttl=30, typed=True)
+    async def fetch_file(self, path: str) -> str:
+        """:meta private: Fetch a file."""
+        if self.session is None:
+            raise RuntimeError("Session unset")
+        async with self.session.get(
+            self.build_remote_url(path), timeout=30
+        ) as response:
+            response.raise_for_status()
+            return await response.text()
 
     async def update_file(
         self, key: str, data: FileVersion, multi_key: bool = False
@@ -231,15 +244,9 @@ class Updater:
         """
 
         async def fetch_data() -> None:
-            if self.session is None:
-                raise RuntimeError("Session unset")
-            async with self.session.get(
-                self.build_remote_url(self.remote_version_data[key]["path"]), timeout=30
-            ) as response:
-                response.raise_for_status()
-                self.pending_write_files[
-                    os.path.join(self.directory, data["path"])
-                ] = await response.text()
+            self.pending_write_files[
+                os.path.join(self.directory, data["path"])
+            ] = await self.fetch_file(self.remote_version_data[key]["path"])
             self.data["fetched"].append(
                 UpdaterData(
                     key=key,
