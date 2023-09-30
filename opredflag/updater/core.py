@@ -18,12 +18,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import asyncio
 import json
 import os
+import sys
 from typing import Literal
 
 import aiohttp
-from typing_extensions import NotRequired, TypedDict
 
 from .enums import Compatibility, VersionComparison
+
+if sys.version_info < (3, 11):
+    from typing_extensions import NotRequired, TypedDict
+else:
+    from typing import NotRequired, TypedDict
 
 __all__ = ("Updater",)
 

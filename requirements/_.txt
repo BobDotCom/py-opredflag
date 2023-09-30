@@ -1,1 +1,2 @@
 aiohttp==3.8.5
+typing_extensions~=4.0; python_version < "3.11"
