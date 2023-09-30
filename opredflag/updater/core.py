@@ -251,9 +251,8 @@ class Updater:
                 UpdaterData(
                     key=key,
                     path=data["path"],
-                    old_version=data["version"] or "unknown_version",
-                    new_version=self.remote_version_data[key]["version"]
-                    or "unknown_version",
+                    old_version=data["version"] or "null",
+                    new_version=self.remote_version_data[key]["version"] or "null",
                     multi_key=multi_key,
                 )
             )
@@ -271,9 +270,9 @@ class Updater:
                         UpdaterData(
                             key=key,
                             path=data["path"],
-                            old_version=data["version"] or "unknown_version",
+                            old_version=data["version"] or "null",
                             new_version=self.remote_version_data[key]["version"]
-                            or "unknown_version",
+                            or "null",
                             reason="Major version newer than local",
                             multi_key=multi_key,
                         )
@@ -287,9 +286,9 @@ class Updater:
                         UpdaterData(
                             key=key,
                             path=data["path"],
-                            old_version=data["version"] or "unknown_version",
+                            old_version=data["version"] or "null",
                             new_version=self.remote_version_data[key]["version"]
-                            or "unknown_version",
+                            or "null",
                             reason="Minor version newer than local",
                             multi_key=multi_key,
                         )
@@ -301,9 +300,8 @@ class Updater:
                 data_obj = UpdaterData(
                     key=key,
                     path=data["path"],
-                    old_version=data["version"] or "unknown_version",
-                    new_version=self.remote_version_data[key]["version"]
-                    or "unknown_version",
+                    old_version=data["version"] or "null",
+                    new_version=self.remote_version_data[key]["version"] or "null",
                     reason="Newer than remote",
                     multi_key=multi_key,
                 )
@@ -315,7 +313,7 @@ class Updater:
                     UpdaterData(
                         key=key,
                         path=data["path"],
-                        old_version=data["version"] or "unknown_version",
+                        old_version=data["version"] or "null",
                         multi_key=multi_key,
                     )
                 )
