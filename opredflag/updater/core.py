@@ -375,6 +375,10 @@ class Updater:
 
             output = []
             for key, values in self.data.items():
+                if key == "fetched":
+                    if len(values) > 0:
+                        print("\n".join(map(format_data, values)))
+                    continue
                 if len(values) > 0:
                     output.append(f"{key.title()}:")
                 for item in values:
