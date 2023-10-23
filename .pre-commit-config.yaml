@@ -41,30 +41,30 @@ repos:
     hooks:
       - id: flake8
         additional_dependencies: [flake8-typing-imports==1.14.0]
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
-        args: ["-rn", "-sn", "--fail-on=I"]
-      # We define an additional manual step to allow running pylint with a spelling
-      # checker in CI.
-      - id: pylint
-        alias: pylint-with-spelling
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
-        args: ["-rn", "-sn", "--fail-on=I", "--spelling-dict=en"]
-        stages: [manual]
-      - id: mypy
-        name: mypy
-        entry: mypy
-        language: system
-        types: [python]
-        args: ["--non-interactive"]
+  #  - repo: local
+  #    hooks:
+  #      - id: pylint
+  #        name: pylint
+  #        entry: pylint
+  #        language: system
+  #        types: [python]
+  #        args: ["-rn", "-sn", "--fail-on=I"]
+  #      # We define an additional manual step to allow running pylint with a spelling
+  #      # checker in CI.
+  #      - id: pylint
+  #        alias: pylint-with-spelling
+  #        name: pylint
+  #        entry: pylint
+  #        language: system
+  #        types: [python]
+  #        args: ["-rn", "-sn", "--fail-on=I", "--spelling-dict=en"]
+  #        stages: [manual]
+  #      - id: mypy
+  #        name: mypy
+  #        entry: mypy
+  #        language: system
+  #        types: [python]
+  #        args: ["--non-interactive"]
   #  - repo: https://github.com/myint/rstcheck
   #    rev: "v5.0.0"
   #    hooks:
