@@ -92,3 +92,4 @@ repos:
       - id: codespell
         additional_dependencies:
           - tomli
+        args: ["--exclude-file=.github/workflows/check.yml"]
