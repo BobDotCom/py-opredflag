@@ -24,13 +24,15 @@ class VersionComparison(Enum):
     """Represents a comparison between semantic versions."""
 
     UNKNOWN = None
-    NEWER_MAJOR = 3
-    NEWER_MINOR = 2
-    NEWER_PATCH = 1
+    NEWER_MAJOR = 4
+    NEWER_MINOR = 3
+    NEWER_PATCH = 2
+    NEWER = 1
     EQUAL = 0
-    OLDER_PATCH = -1
-    OLDER_MINOR = -2
-    OLDER_MAJOR = -3
+    OLDER = 1
+    OLDER_PATCH = -2
+    OLDER_MINOR = -3
+    OLDER_MAJOR = -4
 
 
 class Compatibility(Enum):
@@ -39,6 +41,7 @@ class Compatibility(Enum):
     MAJOR = "major"
     MINOR = "minor"
     PATCH = "patch"
+    NONE = "none"
 
     def __str__(self) -> str:
         return self.value

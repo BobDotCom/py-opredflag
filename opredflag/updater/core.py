@@ -22,6 +22,7 @@ import sys
 from typing import Literal
 
 import aiohttp
+import semver
 from async_lru import alru_cache
 
 from .enums import Compatibility, VersionComparison
@@ -75,6 +76,7 @@ def format_data(data: UpdaterData) -> str:
 
 
 def compare_versions(first: str | None, second: str | None) -> VersionComparison:
+    # pylint: disable=too-many-return-statements
     """Compare two semantic version strings.
 
     Parameters
@@ -92,29 +94,26 @@ def compare_versions(first: str | None, second: str | None) -> VersionComparison
     if first is None or second is None:
         return VersionComparison.UNKNOWN
 
-    val1 = [int(val) for val in first.split(".")]
-    val2 = [int(val) for val in second.split(".")]
+    val1 = semver.Version.parse(first)
+    val2 = semver.Version.parse(second)
 
-    ret = None
-    if val1[0] > val2[0]:
-        ret = VersionComparison.NEWER_MAJOR
-    elif val1[:2] > val2[:2]:
-        ret = VersionComparison.NEWER_MINOR
-    elif val1 > val2:
-        ret = VersionComparison.NEWER_PATCH
-    elif val1 == val2:
-        ret = VersionComparison.EQUAL
-    elif val2[0] > val1[0]:
-        ret = VersionComparison.OLDER_MAJOR
-    elif val2[:2] > val1[:2]:
-        ret = VersionComparison.OLDER_MINOR
-    elif val2 > val1:
-        ret = VersionComparison.OLDER_PATCH
-
-    if ret is None:
-        raise RuntimeError("Unreachable code")
-
-    return ret
+    if val1 > val2:
+        if val1.major > val2.major:
+            return VersionComparison.NEWER_MAJOR
+        if val1.minor > val2.minor:
+            return VersionComparison.NEWER_MINOR
+        if val1.patch > val2.patch:
+            return VersionComparison.NEWER_PATCH
+        return VersionComparison.NEWER
+    if val1 == val2:
+        return VersionComparison.EQUAL
+    if val2.major > val1.major:
+        return VersionComparison.OLDER_MAJOR
+    if val2.minor > val1.minor:
+        return VersionComparison.OLDER_MINOR
+    if val2.patch > val1.patch:
+        return VersionComparison.OLDER_PATCH
+    return VersionComparison.OLDER
 
 
 class Updater:
@@ -293,10 +292,31 @@ class Updater:
                             multi_key=multi_key,
                         )
                     )
-            case VersionComparison.NEWER_PATCH | VersionComparison.UNKNOWN:
-                # Remote is a minor/patch version bump ahead of us, or we don't have a saved version yet
+            case VersionComparison.NEWER_PATCH:
+                # Remote is a patch version bump ahead of us
+                if self.compatibility in (
+                    Compatibility.MAJOR,
+                    Compatibility.MINOR,
+                    Compatibility.PATCH,
+                ):
+                    await fetch_data()
+                else:
+                    self.data["skipped"].append(
+                        UpdaterData(
+                            key=key,
+                            path=data["path"],
+                            old_version=data["version"] or "null",
+                            new_version=self.remote_version_data[key]["version"]
+                            or "null",
+                            reason="Patch version newer than local",
+                            multi_key=multi_key,
+                        )
+                    )
+            case VersionComparison.NEWER | VersionComparison.UNKNOWN:
+                # Remote is a pre-release ahead of us, or we don't have a saved version yet
                 await fetch_data()
-            case VersionComparison.OLDER_MAJOR | VersionComparison.OLDER_MINOR | VersionComparison.OLDER_PATCH:
+            # pylint: disable=line-too-long
+            case VersionComparison.OLDER_MAJOR | VersionComparison.OLDER_MINOR | VersionComparison.OLDER_PATCH | VersionComparison.OLDER:  # noqa: E501
                 data_obj = UpdaterData(
                     key=key,
                     path=data["path"],
