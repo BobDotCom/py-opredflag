@@ -52,7 +52,10 @@ def updater_parser(
     parser.add_argument(
         "-r",
         "--repository",
-        help='Location of OpRedFlag asset GitHub repository, in User/Repo format. Default: "NikolaiVChr/OpRedFlag"',
+        help=(
+            "Location of OpRedFlag asset GitHub repository, in User/Repo format."
+            ' Default: "NikolaiVChr/OpRedFlag"'
+        ),
         required=False,
         default="NikolaiVChr/OpRedFlag",
     )
@@ -87,7 +90,10 @@ def updater_parser(
     parser.add_argument(
         "-c",
         "--compatibility",
-        help='Compatibility level, will only allow updates of this level or lower. Default "minor"',
+        help=(
+            "Compatibility level, will only allow updates of this level or lower."
+            ' Default "minor"'
+        ),
         # action="store_true",
         required=False,
         default=Compatibility.MINOR,

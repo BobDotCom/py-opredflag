@@ -27,7 +27,10 @@ def get_parser() -> argparse.ArgumentParser:
 
     parser_updater = sub.add_parser(
         "update",
-        description="A script which automatically updates OPRF standard asset files from the OpRedFlag repository",
+        description=(
+            "A script which automatically updates OPRF standard asset files from the"
+            " OpRedFlag repository"
+        ),
     )
     updater_parser(parser_updater)
     return parser
