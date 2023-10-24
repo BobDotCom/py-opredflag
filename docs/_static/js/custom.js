@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // https://developer.mozilla.org/en-US/docs/Web/CSS/:has
   // .reference.internal:has(code) + ul
   const tocObjects = document.querySelectorAll(
-    ".toc-tree li > .reference.internal:not(:only-child) code"
+    ".toc-tree li > .reference.internal:not(:only-child) code",
   );
   tocObjects.forEach((e) => {
     e.parentElement.parentElement
