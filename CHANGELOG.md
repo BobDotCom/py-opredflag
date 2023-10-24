@@ -9,9 +9,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
-- Full Semver support, including pre-releases and build metadata.
-- New "none" value for version comparison, to indicate only other pre-release versions
-  of the same patch are compatible.
+- Added full Semver support, including pre-releases and build metadata.
+- Added new "none" value for version comparison, to indicate only other pre-release
+  versions of the same patch are compatible.
 
 ## [0.1.0] - 2023-09-30
 
