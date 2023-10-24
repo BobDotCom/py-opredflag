@@ -5,9 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2023-10-24
 
-No changes yet.
+### Added
+
+- Full Semver support, including pre-releases and build metadata.
+- New "none" value for version comparison, to indicate only other pre-release versions
+  of the same patch are compatible.
 
 ## [0.1.0] - 2023-09-30
 
@@ -51,7 +55,8 @@ No changes yet.
 
 - Initial version.
 
-[unreleased]: https://github.com/BobDotCom/py-opredflag/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/BobDotCom/py-opredflag/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.2.0
 [0.1.0]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.1.0
 [0.0.2]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.0.2
 [0.0.1]: https://github.com/BobDotCom/py-opredlag/releases/tag/v0.0.1
