@@ -155,7 +155,7 @@ class Updater:
         strict: bool = False,
     ):
         """Initialize the updater."""
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments,too-many-positional-arguments
         self.directory = directory
         self.version_json = os.path.join(directory, version_json)
         self.repository = repository
