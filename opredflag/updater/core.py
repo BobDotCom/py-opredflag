@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import asyncio
 import json
 import os
@@ -175,9 +176,9 @@ class Updater:
         self.pending_write_files: dict[str, str] = {}
 
         with open(self.version_json, encoding="utf-8") as f_obj:
-            self.local_version_data: dict[
-                str, FileVersion | list[FileVersion]
-            ] = json.load(f_obj)
+            self.local_version_data: dict[str, FileVersion | list[FileVersion]] = (
+                json.load(f_obj)
+            )
 
     def write_files(self) -> None:
         """:meta private: Write all scheduled files."""
@@ -244,9 +245,9 @@ class Updater:
         """
 
         async def fetch_data() -> None:
-            self.pending_write_files[
-                os.path.join(self.directory, data["path"])
-            ] = await self.fetch_file(self.remote_version_data[key]["path"])
+            self.pending_write_files[os.path.join(self.directory, data["path"])] = (
+                await self.fetch_file(self.remote_version_data[key]["path"])
+            )
             self.data["fetched"].append(
                 UpdaterData(
                     key=key,
@@ -317,7 +318,12 @@ class Updater:
                 # Remote is a pre-release ahead of us, or we don't have a saved version yet
                 await fetch_data()
             # pylint: disable=line-too-long
-            case VersionComparison.OLDER_MAJOR | VersionComparison.OLDER_MINOR | VersionComparison.OLDER_PATCH | VersionComparison.OLDER:  # noqa: E501
+            case (
+                VersionComparison.OLDER_MAJOR
+                | VersionComparison.OLDER_MINOR
+                | VersionComparison.OLDER_PATCH
+                | VersionComparison.OLDER
+            ):  # noqa: E501
                 data_obj = UpdaterData(
                     key=key,
                     path=data["path"],
