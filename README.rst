@@ -1,5 +1,5 @@
-Pycord
-======
+py-opredflag
+============
 
 .. image:: https://img.shields.io/discord/1156255530797514802?label=discord&style=for-the-badge&logo=discord&color=5865F2&logoColor=white
    :target: https://discord.gg/fFAkd7CGkB
