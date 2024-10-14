@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   check_dependencies:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Check Dependencies
     steps:
       - uses: gregsdennis/dependencies-action@main
@@ -18,7 +18,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   check_title:
     name: Check Title
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: amannn/action-semantic-pull-request@v5
         env:
