@@ -40,6 +40,9 @@ Tracker = "https://github.com/BobDotCom/py-opredflag/issues"
 oprf = "opredflag.cli:cli"
 opredflag = "opredflag.cli:cli"
 
+[tool.setuptools.packages.find]
+include = ["opredflag*"]
+
 [tool.setuptools.dynamic]
 dependencies = {file = "requirements/_.txt"}
 
