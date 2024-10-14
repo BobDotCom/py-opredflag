@@ -7,6 +7,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Unreleased
 
+### Added
+
+- Added official support for python 3.12
+
 ### Changed
 
 - Changed Aiohttp request timeout from 30s to default (5m)
