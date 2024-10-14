@@ -214,7 +214,7 @@ class Updater:
         if self.session is None:
             raise RuntimeError("Session unset")
         async with self.session.get(
-            self.build_remote_url("versions.json"), timeout=30
+            self.build_remote_url("versions.json"),
         ) as response:
             self.remote_version_data = await response.json(content_type="text/plain")
 
@@ -224,7 +224,7 @@ class Updater:
         if self.session is None:
             raise RuntimeError("Session unset")
         async with self.session.get(
-            self.build_remote_url(path), timeout=30
+            self.build_remote_url(path),
         ) as response:
             response.raise_for_status()
             return await response.text()
