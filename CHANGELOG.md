@@ -7,13 +7,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-No changes yet.
+[//]: # "No changes yet."
+
+### Added
+
+- Added support for python 3.13.
 
 ## [0.3.0] - 2024-10-14
 
 ### Added
 
-- Added official support for python 3.12
+- Added support for python 3.12
 
 ### Changed
 
