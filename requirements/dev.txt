@@ -11,6 +11,6 @@ pylint==3.3.1
 pre-commit==4.0.1
 docutils-stubs==0.0.22
 build==1.2.2.post1
-twine==5.1.1
+twine==6.0.1
 bandit==1.7.10
 codespell==2.3.0
