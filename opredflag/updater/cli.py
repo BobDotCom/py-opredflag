@@ -94,7 +94,7 @@ def updater_parser(
         "--compatibility",
         help=(
             "Compatibility level, will only allow updates of this level or lower."
-            ' Default "minor"'
+            ' Default: "minor"'
         ),
         # action="store_true",
         required=False,
@@ -107,6 +107,17 @@ def updater_parser(
         "--strict",
         help="Fail if local file versions are newer than remote",
         action="store_true",
+    )
+    parser.add_argument(
+        "-u",
+        "--update-timestamp-after",
+        help=(
+            "Update the timestamp in the version file if this many days has passed. "
+            "0 for always and -1 for never. Default: 30"
+        ),
+        required=False,
+        default=30,
+        type=int,
     )
     parser.set_defaults(func=cli_func)
     return parser
@@ -125,6 +136,7 @@ def cli_func(args: argparse.Namespace) -> str:
             args.exclude,
             args.compatibility,
             args.strict,
+            args.update_timestamp_after,
         )
         return "\n".join(await updater.run())
 

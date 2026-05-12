@@ -18,9 +18,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import asyncio
+import copy
 import json
 import os
 import sys
+from datetime import datetime, timezone
 from typing import Literal
 
 import aiohttp
@@ -44,6 +46,14 @@ class FileVersion(TypedDict):
     path: str
 
 
+class VersionDataFile(TypedDict):
+    """A version data file."""
+
+    version: int
+    last_updated: datetime
+    data: dict[str, FileVersion | list[FileVersion]]
+
+
 class UpdaterData(TypedDict):
     """Output data entry from the updater."""
 
@@ -53,6 +63,50 @@ class UpdaterData(TypedDict):
     new_version: NotRequired[str]
     reason: NotRequired[str]
     multi_key: bool
+
+
+def load_version_data_file(file_path: str) -> VersionDataFile:
+    """Load a version data file from a path."""
+
+    with open(file_path, encoding="utf-8") as f_obj:
+        version_data = update_version_data_file(json.load(f_obj))
+        version_data["last_updated"] = datetime.fromisoformat(
+            version_data["last_updated"]
+        )
+
+    return version_data
+
+
+def dump_version_data_file(version_data: VersionDataFile, file_path: str):
+    """Dump a version data file to a path."""
+
+    version_data["last_updated"] = version_data["last_updated"].isoformat()
+
+    with open(file_path, "w", encoding="utf-8") as f_obj:
+        json.dump(version_data, f_obj, indent=2)
+
+
+def update_version_data_file(version_data: dict) -> VersionDataFile:
+    """Handle all the updates required if updating from an old file."""
+
+    old_file_version = version_data.get("version")
+
+    # This is meant to be recursive. Each Version will only upgrade to the next,
+    #     so if multiple versions need updating, they will progress in order.
+    match old_file_version:
+        case None:
+            # Consider this as version 0. Migrate to version 1 and recurse.
+            # Set last_updated to epoch
+            return update_version_data_file(
+                {
+                    "version": 1,
+                    "last_updated": datetime.fromtimestamp(0, timezone.utc).isoformat(),
+                    "data": version_data,
+                }
+            )
+        case 1:
+            # Currently up-to-date. Assume nothing to do, end recursion and return.
+            return version_data
 
 
 def format_data(data: UpdaterData) -> str:
@@ -139,6 +193,9 @@ class Updater:
         Compatibility level, will only allow updates of this level or lower
     strict:
         Fail if local file versions are newer than remote
+    update_timestamp_after:
+        Automatically update the `last_updated` key in the version file after this amount of days,
+            even when no changes have been made. Set to 0 for always or -1 for never.
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -153,6 +210,7 @@ class Updater:
         exclude: str = "",
         compatibility: Compatibility = Compatibility.MINOR,
         strict: bool = False,
+        update_timestamp_after: int = 30,
     ):
         """Initialize the updater."""
         # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -164,6 +222,7 @@ class Updater:
         self.exclude = exclude
         self.compatibility = compatibility
         self.strict = strict
+        self.update_timestamp_after = update_timestamp_after
         self.session: aiohttp.ClientSession | None = None
         self._remote_version_data: dict[str, FileVersion] | None = None
         self.data: dict[
@@ -175,10 +234,8 @@ class Updater:
         }
         self.pending_write_files: dict[str, str] = {}
 
-        with open(self.version_json, encoding="utf-8") as f_obj:
-            self.local_version_data: dict[str, FileVersion | list[FileVersion]] = (
-                json.load(f_obj)
-            )
+        self.local_version_data = load_version_data_file(self.version_json)
+        self.original_version_data = copy.deepcopy(self.local_version_data)
 
     def write_files(self) -> None:
         """:meta private: Write all scheduled files."""
@@ -205,8 +262,20 @@ class Updater:
 
     def save_version_data(self) -> None:
         """:meta private: Save the local versions file."""
-        with open(self.version_json, "w", encoding="utf-8") as f_obj:
-            json.dump(self.local_version_data, f_obj, indent=2)
+
+        # If we're actually updating, we need to update the timestamp.
+        if self.original_version_data != self.local_version_data:
+            self.local_version_data["last_updated"] = datetime.now(timezone.utc)
+
+        # Also update the timestamp if it's been long enough
+        if self.update_timestamp_after >= 0:
+            time_since_update = (
+                datetime.now(timezone.utc) - self.local_version_data["last_updated"]
+            )
+            if time_since_update.days >= self.update_timestamp_after:
+                self.local_version_data["last_updated"] = datetime.now(timezone.utc)
+
+        dump_version_data_file(self.local_version_data, self.version_json)
 
     @alru_cache(ttl=30, typed=True)
     async def fetch_remote_version_data(self) -> None:
@@ -348,7 +417,7 @@ class Updater:
     def get_keys(self) -> list[str]:
         """:meta private: Get keys."""
         if self.include == "*":
-            keys_to_check = list(self.local_version_data.keys())
+            keys_to_check = list(self.local_version_data["data"].keys())
         elif self.include == "":
             keys_to_check = []
         else:
@@ -389,7 +458,7 @@ class Updater:
             coros = []
 
             for k, val in {
-                k: self.local_version_data[k] for k in keys_to_check
+                k: self.local_version_data["data"][k] for k in keys_to_check
             }.items():
                 if isinstance(val, list):
                     for data_part in val:
