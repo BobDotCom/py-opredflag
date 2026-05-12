@@ -13,6 +13,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - Added support for python 3.13.
 
+### Changed
+
+- The default repo for the updater is now Op-Redflag/OpRedFlag
+
 ## [0.3.0] - 2024-10-14
 
 ### Added

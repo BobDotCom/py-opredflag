@@ -147,7 +147,7 @@ class Updater:
         self,
         directory: str = ".",
         version_json: str = "oprf-versions.json",
-        repository: str = "NikolaiVChr/OpRedFlag",
+        repository: str = "Op-Redflag/OpRedFlag",
         branch: str = "master",
         include: str = "*",
         exclude: str = "",
