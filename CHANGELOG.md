@@ -12,6 +12,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Added
 
 - Added support for python 3.13.
+- Added support for python 3.14.
+- Added versioning and updated version file syntax.
+- Added last_updated timestamp to version file.
+- Added update_timestamp_after arguments to updater and CLI, to update the timestamp
+  after a certain amount of days have passed.
 
 ### Changed
 
