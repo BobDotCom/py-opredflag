@@ -23,7 +23,7 @@ import json
 import os
 import sys
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Any, Literal, cast
 
 import aiohttp
 import semver
@@ -54,6 +54,14 @@ class VersionDataFile(TypedDict):
     data: dict[str, FileVersion | list[FileVersion]]
 
 
+class VersionDataFileJson(TypedDict):
+    """The json serializable version of a VersionDataFile type."""
+
+    version: int
+    last_updated: str
+    data: dict[str, FileVersion | list[FileVersion]]
+
+
 class UpdaterData(TypedDict):
     """Output data entry from the updater."""
 
@@ -70,23 +78,27 @@ def load_version_data_file(file_path: str) -> VersionDataFile:
 
     with open(file_path, encoding="utf-8") as f_obj:
         version_data = update_version_data_file(json.load(f_obj))
-        version_data["last_updated"] = datetime.fromisoformat(
-            version_data["last_updated"]
-        )
+        new_version_data: VersionDataFile = {
+            **version_data,
+            "last_updated": datetime.fromisoformat(version_data["last_updated"]),
+        }
 
-    return version_data
+    return new_version_data
 
 
-def dump_version_data_file(version_data: VersionDataFile, file_path: str):
+def dump_version_data_file(version_data: VersionDataFile, file_path: str) -> None:
     """Dump a version data file to a path."""
 
-    version_data["last_updated"] = version_data["last_updated"].isoformat()
+    new_version_data = {
+        **version_data,
+        "last_updated": version_data["last_updated"].isoformat(),
+    }
 
     with open(file_path, "w", encoding="utf-8") as f_obj:
-        json.dump(version_data, f_obj, indent=2)
+        json.dump(new_version_data, f_obj, indent=2)
 
 
-def update_version_data_file(version_data: dict) -> VersionDataFile:
+def update_version_data_file(version_data: dict[Any, Any]) -> VersionDataFileJson:
     """Handle all the updates required if updating from an old file."""
 
     old_file_version = version_data.get("version")
@@ -106,7 +118,31 @@ def update_version_data_file(version_data: dict) -> VersionDataFile:
             )
         case 1:
             # Currently up-to-date. Assume nothing to do, end recursion and return.
-            return version_data
+
+            # Before returning, do a quick check to make sure the data is correct.
+            try:
+                # We can type ignore here because we're catching value and type errors below
+                datetime.fromisoformat(version_data.get("last_updated"))  # type: ignore
+            except (ValueError, TypeError) as e:
+                raise ValueError(
+                    "Couldn't parse version file 'last_updated' value. "
+                    f"Expected an ISO 8601 string, but got: {version_data.get('last_updated')!r}"
+                ) from e
+
+            if not isinstance(old_file_data := version_data.get("data"), dict):
+                raise TypeError(
+                    "Couldn't parse version file 'data' value. "
+                    f"Expected a dict, got {type(old_file_data).__name__}: {old_file_data!r}"
+                )
+
+            # We can skip version because we've already checked it
+
+            # Now, since we've done the checks we can cast it to the return type
+            return cast(VersionDataFileJson, version_data)
+        case _:
+            raise ValueError(
+                f"Expected file version 1, got {old_file_version!r}. Please update your version file."
+            )
 
 
 def format_data(data: UpdaterData) -> str:
