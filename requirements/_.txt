@@ -1,4 +1,4 @@
 aiohttp==3.13.5
 async_lru==2.3.0
-typing_extensions~=4.0; python_version < "3.11"
+typing_extensions~=4.15; python_version < "3.11"
 semver==3.0.2
