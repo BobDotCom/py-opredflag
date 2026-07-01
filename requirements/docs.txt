@@ -6,4 +6,4 @@ sphinxext-opengraph==0.13.0
 sphinx-copybutton==0.5.2
 furo==2025.12.19
 sphinx-autodoc-typehints==3.0.1
-sphinx-argparse==0.5.2
+sphinx-argparse==0.6.0
