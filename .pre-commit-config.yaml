@@ -9,7 +9,7 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
   - repo: https://github.com/PyCQA/autoflake
-    rev: v2.3.3
+    rev: v2.4.0
     hooks:
       - id: autoflake
   #        args:
@@ -24,11 +24,11 @@ repos:
       - id: pyupgrade
         args: [--py310-plus]
   - repo: https://github.com/PyCQA/isort
-    rev: 9.0.0a3
+    rev: 9.0.1
     hooks:
       - id: isort
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.3.1
+    rev: 26.5.1
     hooks:
       - id: black
         args: [--safe, --quiet]
@@ -82,12 +82,12 @@ repos:
       - id: prettier
         args: [--prose-wrap=always, --print-width=88]
   - repo: https://github.com/DanielNoord/pydocstringformatter
-    rev: v0.7.5
+    rev: v1.0.0
     hooks:
       - id: pydocstringformatter
   #        args: ["--split-summary-body", "--max-summary-lines=2"]
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.2
+    rev: v2.4.3
     hooks:
       - id: codespell
         additional_dependencies:
